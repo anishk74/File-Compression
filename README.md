@@ -1,2 +1,2 @@
 # File-Compression
-Compress your purely text files using Huffman code
+Compress your purely text files using Huffman codes
