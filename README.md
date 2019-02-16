@@ -1,2 +1,2 @@
 # File-Compression
-See how to generate a compressed file using Huffman codes
+Compress your purely text files using Huffman code
