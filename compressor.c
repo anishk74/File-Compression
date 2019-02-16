@@ -1,5 +1,3 @@
-// The program reads a text-file, counts the frequency of the characters in it then assign huffman code to them accordingly.
-// Huffman code using priority queue.
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -49,6 +47,7 @@ void assignHuffcode(tnode *root,char *bin,int j)
 			{
 				huffcodes[(int)root->id[0]][i]=bin[i];
 			}
+			//Remove the comment below to get the Huffman codes assigned to the characters
 			//printf("%s-%s\n",root->id,huffcodes[(int)root->id[0]]);
 			
 		}
@@ -193,7 +192,7 @@ void treeofcf(FILE *cf,tnode *root,char *buffer1,int *buffer1Index,int *cfChar)
 		if(*buffer1Index==8)
 		{
 			fprintf(cf,"%c",binTochar(buffer1));
-			//printf("%c",'8');
+			
 			(*cfChar)++;
 			strcpy(buffer1,"");
 			*buffer1Index=0;
@@ -210,7 +209,7 @@ void treeofcf(FILE *cf,tnode *root,char *buffer1,int *buffer1Index,int *cfChar)
 			if(*buffer1Index==8)
 			{
 				fprintf(cf,"%c",binTochar(buffer1));
-				//printf("%c",'9');
+				
 				(*cfChar)++;
 				strcpy(buffer1,"");
 				*buffer1Index=0;
@@ -226,7 +225,7 @@ void treeofcf(FILE *cf,tnode *root,char *buffer1,int *buffer1Index,int *cfChar)
 		{
 			fprintf(cf,"%c",binTochar(buffer1));
 			
-			//printf("%c",'1');
+			
 			(*cfChar)++;
 			strcpy(buffer1,"");
 			*buffer1Index=0;
@@ -338,7 +337,6 @@ int main()
 	int charCount=0;
 	treeofcf(compressedFile,root,buffer1,&buffer1Index,&charCount);
 	fseek(fp,0,SEEK_SET);
-	//fprintf(compressedFile, "\\&" );
 	
 	//writing the file in compressed file after storing the tree
 	
@@ -390,7 +388,7 @@ int main()
 		}
 		if(flag==1)
 			break;
-		//printf("%s ",buffer);
+		
 		buf=binTochar(buffer);
 		fprintf(compressedFile,"%c",(char)buf);
 		
