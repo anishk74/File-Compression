@@ -1,4 +1,3 @@
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -16,7 +15,7 @@ typedef struct node
 	char id[20];
 	cnode c;
 	struct node *left;
-	struct node *right; 
+	struct node *right;
 	int weight;
 }tnode;
 
@@ -49,7 +48,7 @@ void assignHuffcode(tnode *root,char *bin,int j)
 			}
 			//Remove the comment below to get the Huffman codes assigned to the characters
 			//printf("%s-%s\n",root->id,huffcodes[(int)root->id[0]]);
-			
+
 		}
 		++j;
 		bin[j]='0';
@@ -94,22 +93,6 @@ void mergeSort(cnode *s,int low,int high)
 	}
 }
 
-void sort(cnode *s, int n)
-{
-	int i,j;
-	for(i=0;i<n;i++)
-	{
-		for(j=i+1;j<n;j++)
-		{
-			if(s[i].freq>s[j].freq)
-			{
-				cnode temp=s[i];
-				s[i]=s[j];
-				s[j]=temp;
-			}
-		}
-	}
-}
 
 qnode *insert(qnode *qn,tnode *tn)
 {
@@ -123,23 +106,24 @@ qnode *insert(qnode *qn,tnode *tn)
 
 qnode *delpnode(qnode *qn,tnode *t1)
 {
+	qnode *delNode;
 	if(qn->x==t1)
 	{
+		delNode=qn;
 		qn=qn->next;
+		free(delNode);
 		return qn;
 	}
 	qnode *i1;
 	i1=qn;
-	while(1)
+	while(i1->next->x!=t1)
 	{
-		if(i1->next->x==t1)
-		{
-			i1->next=i1->next->next;
-			return qn;
-		}
 		i1=i1->next;
 	}
-
+	delNode=i1->next;
+	i1->next=i1->next->next;
+	free(delNode);
+	return qn;
 }
 
 tnode *min(qnode *qn)
@@ -181,7 +165,7 @@ void decToBin(char *bits,char ch1)
 	}
 }
 
-void treeofcf(FILE *cf,tnode *root,char *buffer1,int *buffer1Index,int *cfChar)
+void treeOfCf(FILE *cf,tnode *root,char *buffer1,int *buffer1Index,int *cfChar)
 {
 
 	if(root==NULL)
@@ -192,50 +176,58 @@ void treeofcf(FILE *cf,tnode *root,char *buffer1,int *buffer1Index,int *cfChar)
 		if(*buffer1Index==8)
 		{
 			fprintf(cf,"%c",binTochar(buffer1));
-			
+
 			(*cfChar)++;
 			strcpy(buffer1,"");
 			*buffer1Index=0;
 		}
 		char s[9];
 		decToBin(s,root->c.ch);
-		
+
 
 		int i;
 		for(i=0;i<8;i++)
 		{
 			buffer1[(*buffer1Index)++]=s[i];
-			
+
 			if(*buffer1Index==8)
 			{
 				fprintf(cf,"%c",binTochar(buffer1));
-				
+
 				(*cfChar)++;
 				strcpy(buffer1,"");
 				*buffer1Index=0;
 			}
 		}
-		
+
 	}
 	else
 	{
 		buffer1[(*buffer1Index)++]='0';
-		
+
 		if(*buffer1Index==8)
 		{
 			fprintf(cf,"%c",binTochar(buffer1));
-			
-			
+
+
 			(*cfChar)++;
 			strcpy(buffer1,"");
 			*buffer1Index=0;
 		}
-		treeofcf(cf,root->left,buffer1,buffer1Index,cfChar);
-		treeofcf(cf,root->right,buffer1,buffer1Index,cfChar);
+		treeOfCf(cf,root->left,buffer1,buffer1Index,cfChar);
+		treeOfCf(cf,root->right,buffer1,buffer1Index,cfChar);
 	}
 }
 
-
+void freeAllocatedMemory(tnode *root)
+{
+	if(root!=NULL)
+	{
+		freeAllocatedMemory(root->left);
+		freeAllocatedMemory(root->right);
+		free(root);
+	}
+}
 
 int main()
 {
@@ -264,7 +256,7 @@ int main()
 		(s[(int)ch].freq)++;
 		m++;
 	}
-	
+
 	mergeSort(s,0,n-1);
 
 	int j=0;
@@ -301,7 +293,6 @@ int main()
 		qu=delpnode(qu,m1);
 		m2=min(qu);
 		qu=delpnode(qu,m2);
-
 		tnode *parent;
 		parent=malloc(sizeof(tnode));
 		parent->weight = m1->weight+m2->weight;
@@ -323,11 +314,11 @@ int main()
 	root=qu->x;
 
 
-	char ch1,ch2;
+	//char ch1,ch2;
 
-	
 
-	
+
+
 	char bin[100];
 	strcpy(bin,"0");
 	assignHuffcode(root,bin,-1);
@@ -335,11 +326,11 @@ int main()
 	char buffer1[9]="";
 	int buffer1Index=0;
 	int charCount=0;
-	treeofcf(compressedFile,root,buffer1,&buffer1Index,&charCount);
+	treeOfCf(compressedFile,root,buffer1,&buffer1Index,&charCount);
 	fseek(fp,0,SEEK_SET);
-	
+
 	//writing the file in compressed file after storing the tree
-	
+
 	char readedCh;
 	char code[80];
 	int codeIndex=0;
@@ -347,13 +338,13 @@ int main()
 	strcpy(code,huffcodes[(int)readedCh]);
 
 	int codeLen=strlen(code);
-	
+
 	for(;buffer1Index<8;)
 	{
 		buffer1[buffer1Index++]=code[codeIndex++];
 		if(codeIndex==codeLen)
 		{
-			int codeIndex=0;
+			codeIndex=0;
 			fread(&readedCh,sizeof(char),1,fp);
 			strcpy(code,huffcodes[(int)readedCh]);
 			codeLen=strlen(code);
@@ -363,9 +354,9 @@ int main()
 	char buffer[9]="";
 	int bufferIndex=0;
 	int flag=0;
-	
+
 	int buf;
-	
+
 	while(1)
 	{
 		for(bufferIndex=0;bufferIndex<8;)
@@ -388,18 +379,19 @@ int main()
 		}
 		if(flag==1)
 			break;
-		
+
 		buf=binTochar(buffer);
 		fprintf(compressedFile,"%c",(char)buf);
-		
+
 		strcpy(buffer,"");
 		charCount++;
 	}
 	fprintf(compressedFile,"&%d",charCount);
-	
 	fclose(fp);
-	
 	fclose(compressedFile);
+
+	freeAllocatedMemory(root);
+	free(qu);
 	printf("File successfully compressed as %s",outputFileC);
 	return 0;
 }

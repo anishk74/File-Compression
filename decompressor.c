@@ -12,11 +12,23 @@ typedef struct node
 	char id[20];
 	cnode c;
 	struct node *left;
-	struct node *right; 
+	struct node *right;
 	int weight;
 }tnode;
 
-
+/*
+void strrev(char *s)
+{
+    int n=strlen(s),i;
+    char temp;
+    for(i=0;i<n/2;i++)
+    {
+        temp=s[i];
+        s[i]=s[n-1-i];
+        s[n-1-i]=temp;
+    }
+}
+*/
 
 tnode *createnode()
 {
@@ -57,9 +69,9 @@ void decodeTree(FILE *cf,tnode* root,char *buffer,int *bufferIndex,int *readCoun
 {
 
 	char ch,ch1;
-	
+
 	ch=buffer[(*bufferIndex)++];
-	
+
 	if(*bufferIndex==8)
 	{
 		strcpy(buffer,"");
@@ -86,7 +98,7 @@ void decodeTree(FILE *cf,tnode* root,char *buffer,int *bufferIndex,int *readCoun
 
 		}
 		ch=binTochar(s);
-		
+
 		root->c.ch=ch;
 	}
 	else if(ch=='0')
@@ -97,10 +109,22 @@ void decodeTree(FILE *cf,tnode* root,char *buffer,int *bufferIndex,int *readCoun
 		decodeTree(cf,root->right,buffer,bufferIndex,readCount);
 	}
 }
+
+void freeAllocatedMemory(tnode *root)
+{
+	if(root!=NULL)
+	{
+		freeAllocatedMemory(root->left);
+		freeAllocatedMemory(root->right);
+		free(root);
+	}
+}
+
 int main()
 {
 	int i,j;
-	char ch,ch1,ch2,file[30],outputFile[30];
+	char ch,ch1,file[30],outputFile[30];
+	
 	FILE *compressedFile;
 	printf("Enter the file name of compressed file: ");
 	scanf("%s",file);
@@ -123,12 +147,12 @@ int main()
 		fseek(compressedFile,-2L,1);
 		num[i++]=ch1;
 		fscanf(compressedFile,"%c",&ch1);
-		
+
 	}
-	
+
 	strrev(num);
 	long long int cfChar=atoi(num);
-	
+
 	fseek(compressedFile,0,SEEK_SET);
 	tnode *root,*r1;
 	root=createnode();
@@ -139,12 +163,12 @@ int main()
 	readCount++;
 	decToBin(buffer,ch1);
 	decodeTree(compressedFile,root,buffer,&bufferIndex,&readCount);
-	
+
 	r1=root;
-	
+
 	FILE *origFile=fopen(outputFile,"w");
-	
-	
+
+
 	for(;bufferIndex<8;bufferIndex++)
 	{
 		ch=buffer[bufferIndex];
@@ -159,7 +183,7 @@ int main()
 			r1=r1->right;
 	}
 	char bits[8];
-	
+
 	int readCount1=readCount;
 	while(readCount1<=cfChar)
 	{
@@ -177,15 +201,15 @@ int main()
 				r1=r1->left;
 			else
 				r1=r1->right;
-			
+
 		}
 		readCount1++;
 	}
-	
+
 	fread(&ch, sizeof(char), 1, compressedFile);
 	while(ch!='&')
 	{
-		
+
 		if(r1->left==NULL)
 		{
 			fprintf(origFile,"%c",r1->c.ch);
@@ -199,5 +223,6 @@ int main()
 	}
 	fprintf(origFile,"%c",r1->c.ch);
 	printf("File successfully decompressed as %s\n",outputFile);
+	freeAllocatedMemory(root);
 	fclose(origFile);
 }
